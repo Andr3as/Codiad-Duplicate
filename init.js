@@ -19,26 +19,61 @@
     codiad.Duplicate = {
         
         path: curpath,
+        file: "",
         
         init: function() {
             
         },
         
-        duplicate: function(path) {
-            //codiad.filemanager.contextMenuHide();
-            var _this = this;
-            setTimeout(function(){
-                var name = prompt("Duplicate name:", _this.getName(path));
-                if (name === null) {
-                    return false;
-                }
-                $.getJSON(_this.path+"controller.php?action=duplicate&path="+path+"&name="+name, function(json){
-                    codiad.message[json.status](json.message);
-                    codiad.filemanager.rescan(codiad.project.getCurrent());
-                });
-            }, 250);
+        //////////////////////////////////////////////////////////
+        //
+        //  Show dialog to enter new name
+        //
+        //  Parameter
+        //
+        //  path - {String} - File path
+        //
+        //////////////////////////////////////////////////////////
+        showDialog: function(path) {
+            this.file = path;
+            var name = this.getName(path);
+            codiad.modal.load(400, this.path+"dialog.php?name="+name);
         },
         
+        //////////////////////////////////////////////////////////
+        //
+        //  Duplicate file
+        //
+        //  Parameter
+        //
+        //  path - {String} - File path
+        //  name - {String} - Name of the duplicate
+        //
+        //////////////////////////////////////////////////////////
+        duplicate: function(path, name) {
+            var _this = this;
+            if (typeof(path) == 'undefined') {
+                path = this.file;
+            }
+            if (typeof(name) == 'undefined') {
+                name = $('#duplicate_name').val();
+                codiad.modal.unload();
+            }
+            $.getJSON(_this.path+"controller.php?action=duplicate&path="+path+"&name="+name, function(json){
+                codiad.message[json.status](json.message);
+                codiad.filemanager.rescan(codiad.project.getCurrent());
+            });
+        },
+        
+        //////////////////////////////////////////////////////////
+        //
+        //  Get basename of file
+        //
+        //  Parameter
+        //
+        //  path - {String} - File path
+        //
+        //////////////////////////////////////////////////////////
         getName: function(path) {
             return path.substring(path.lastIndexOf("/")+1);
         }
